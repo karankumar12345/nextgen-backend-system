@@ -1,0 +1,31 @@
+{
+  "name": "backendserver",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "dev:migrate": "npx sequelize-cli db:migrate",
+    "dev:migrate:undo": "npx sequelize-cli db:migrate:undo",
+    "dev:migrate:undo:all": "npx sequelize-cli db:migrate:undo:all",
+    "dev:seed": "npx sequelize-cli db:seed:all",
+    "dev:seed:undo": "npx sequelize-cli db:seed:undo:all",
+    "migration:generate": "npx sequelize-cli migration:generate --name",
+    "seed:generate": "npx sequelize-cli seed:generate --name",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "mysql2": "^3.22.1",
+    "sequelize": "^6.37.8"
+  },
+  "devDependencies": {
+    "sequelize-cli": "^6.6.5"
+  }
+}

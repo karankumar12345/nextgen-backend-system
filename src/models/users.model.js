@@ -47,6 +47,21 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       
       },
+      failed_login_attempts: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      },
+      locked_until: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        defaultValue: null,
+      },
+      lockout_count: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      },
     },
     {
       tableName: 'users',

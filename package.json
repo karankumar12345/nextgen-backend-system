@@ -2,28 +2,37 @@
   "name": "backendserver",
   "version": "1.0.0",
   "description": "",
-  "main": "src/index.js",
-  "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js",
-    "dev:migrate": "npx sequelize-cli db:migrate",
-    "dev:migrate:undo": "npx sequelize-cli db:migrate:undo",
-    "dev:migrate:undo:all": "npx sequelize-cli db:migrate:undo:all",
-    "dev:seed": "npx sequelize-cli db:seed:all",
-    "dev:seed:undo": "npx sequelize-cli db:seed:undo:all",
-    "migration:generate": "npx sequelize-cli migration:generate --name",
-    "seed:generate": "npx sequelize-cli seed:generate --name",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "main": "src/server.js",
+    "scripts": {
+      "start": "node server.js",
+      "dev": "nodemon server.js",
+      "dev:migrate": "npx sequelize-cli db:migrate",
+      "dev:migrate:undo": "npx sequelize-cli db:migrate:undo",
+      "dev:migrate:undo:all": "npx sequelize-cli db:migrate:undo:all",
+      "dev:seed": "npx sequelize-cli db:seed:all",
+      "dev:seed:undo": "npx sequelize-cli db:seed:undo:all",
+      "migration:generate": "npx sequelize-cli migration:generate --name",
+      "seed:generate": "npx sequelize-cli seed:generate --name",
+      "test": "echo \"Error: no test specified\" && exit 1"
+    },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@node-rs/argon2": "^2.0.2",
+    "cloudinary": "^2.9.0",
+    "cookie-parser": "^1.4.7",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.4.1",
+    "joi": "^18.1.2",
+    "jsonwebtoken": "^9.0.3",
+    "multer": "^2.1.1",
     "mysql2": "^3.22.1",
-    "sequelize": "^6.37.8"
+    "nodemon": "^3.1.14",
+    "sequelize": "^6.37.8",
+    "ua-parser-js": "^2.0.9"
   },
   "devDependencies": {
     "sequelize-cli": "^6.6.5"

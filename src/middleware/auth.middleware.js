@@ -15,7 +15,7 @@ const authMiddleware = (req, res, next) => {
   try {
     req.user = jwt.verify(
       token,
-      process.env.JWT_ACCESS_SECRET
+      process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET
     );
     next();
   } catch {

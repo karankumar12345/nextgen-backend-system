@@ -10,6 +10,8 @@ const { AuthController } = require('../controllers');
 const router = express.Router();
 
 router.post('/register',upload,validate(AuthValidation.registerSchema), AuthController.RegisterUser);
+router.post("/activate-user", AuthController.ActivateUser);
+
 router.post(
   "/login",
   validate(AuthValidation.loginSchema),

@@ -3,17 +3,35 @@ const asyncHandler = require("../utils/asyncHandler");
 const STATUS_CODES = require("../utils/statusCode");
 
 class AuthController {
-   RegisterUser =asyncHandler(async (req, res) =>{
-    const result = await AuthService.RegisterUser({
-      ...req.body,
-      profile_pic: req.file || null,
-    });
-    res.status(STATUS_CODES.CREATED).json({
-      success: true,
-      message: "User Registered Successfully",
-      data: result,
-    });
-  })
+RegisterUser = asyncHandler(async (req, res) => {
+  console.log("Received registration request with data:", req.body);
+ 
+  const { email ,token} = await AuthService.RegisterUser({
+    userData: req.body,
+    profile_pic: req.file || null,
+  });
+
+  res.status(STATUS_CODES.CREATED).json({
+    success: true,
+    message: `Please check your email (${email}) to activate your account`,
+    data: { email,token },
+  });
+});
+
+ ActivateUser = asyncHandler(async (req, res) => {
+  const { activation_token, activation_code } = req.body;
+
+ const {user}= await AuthService.ActivateUser({
+    activation_token,
+    activation_code,
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Account activated successfully",
+    data: user,
+  });
+});
 
   LoginUser=asyncHandler(async (req, res) => {
 
@@ -34,7 +52,7 @@ class AuthController {
     });
   })
   LogoutUser=asyncHandler(async(req,res)=>{
-    await AuthService.logoutUser(req);
+    await AuthService.LogoutUser(req,res);
     res.status(STATUS_CODES.OK).json({
       success: true,
       message: "Logout successful",
@@ -42,7 +60,7 @@ class AuthController {
 
   })
   LogoutFromAllDevices=asyncHandler(async(req,res)=>{
-    await AuthService.logoutFromAllDevices(req.user.id,res);
+    await AuthService.LogoutFromAllDevices(req.user.id,res);
     res.status(STATUS_CODES.OK).json({
       success: true,
       message: "Logged out from all devices successfully",

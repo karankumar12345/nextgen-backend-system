@@ -22,6 +22,11 @@ module.exports = (sequelize, DataTypes) => {
           len: [6, 100],
         },
       },
+      email: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+      },
       is_active: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
@@ -62,6 +67,15 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: 0,
       },
+      created_at: {
+        type: DataTypes.DATE,
+        allowNull: false,
+      },
+      updated_at: {
+        type: DataTypes.DATE,
+        allowNull: false,
+      },
+      
     },
     {
       tableName: 'users',

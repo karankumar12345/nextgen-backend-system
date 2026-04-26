@@ -28,7 +28,7 @@ const verifyRefreshToken = async (req, res, next) => {
   try {
     req.user = jwt.verify(
       refreshToken,
-      process.env.JWT_REFRESH_SECRET
+      process.env.JWT_REFRESH_SECRET || process.env.REFRESH_TOKEN_SECRET
     );
     req.session = session;
     next();

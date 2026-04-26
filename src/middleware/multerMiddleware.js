@@ -30,6 +30,6 @@ const upload = multer({
     fileSize: 5 * 1024 * 1024, // 5MB
   },
   fileFilter,
-}).single("image");
+}).single("profile_pic");
 
 module.exports = upload;

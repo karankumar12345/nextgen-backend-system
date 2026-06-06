@@ -33,6 +33,12 @@ router.post(
   authMiddleware,
   AuthController.LogoutFromAllDevices
 );
+router.post(
+  "/logout-selected",
+  authMiddleware,
+  AuthController.LogoutFromSelectedDevices
+);
+
 
 router.get(
   "/profile",
@@ -66,5 +72,10 @@ router.get(
   AuthController.GetAllUsers
 );
 
+router.delete(
+  "/users/:id",
+  authMiddleware,
+  AuthController.DeleteUser
+);
 
 module.exports = router;

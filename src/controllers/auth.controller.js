@@ -66,6 +66,14 @@ RegisterUser = asyncHandler(async (req, res) => {
       message: "Logged out from all devices successfully",
     });
   })
+  LogoutFromSelectedDevices=asyncHandler(async(req,res)=>{
+    const { sessionId } = req.body;
+    await AuthService.LogoutFromSelectedDevices(sessionId,res);
+    res.status(STATUS_CODES.OK).json({
+      success: true,
+      message: "Logged out from selected device successfully",
+    });
+  })
 
 
   GetProfile=asyncHandler(async(req,res)=>{
@@ -107,6 +115,14 @@ RegisterUser = asyncHandler(async (req, res) => {
       success: true,
       message: "Users retrieved successfully",
       data: result,
+    });
+  })
+  DeleteUser=asyncHandler(async(req,res)=>{
+    const userId = req.params.id;
+    await AuthService.DeleteUser(userId);
+    res.status(STATUS_CODES.OK).json({
+      success: true,
+      message: "User deleted successfully",
     });
   })
 

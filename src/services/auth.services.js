@@ -397,6 +397,14 @@ ActivateUser = async function ({ activation_token, activation_code }) {
       sameSite: "Strict",
     });
   };
+  LogoutFromSelectedDevices = async function (sessionid, res) {
+    await Session.update({ is_revoked: true }, { where: { id: sessionid } });
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Strict",
+    });
+  };
 
   GetProfile = async function (userId) {
     const user = await User.findByPk(userId, {
@@ -475,6 +483,13 @@ ActivateUser = async function ({ activation_token, activation_code }) {
       ],
     });
     return users;
+  };
+  DeleteUser = async function (userId) {
+    const user = await User.findByPk(userId);
+    if (!user) {
+      throw new AppError("User not found", STATUS_CODES.NOT_FOUND);
+    }
+    await user.destroy();
   };
 }
 

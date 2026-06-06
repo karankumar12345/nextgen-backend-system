@@ -1,63 +1,98 @@
-﻿
-# 🚀  nextgen-backend-system
+# 🚀 NextGen Backend System
 
-A production-grade backend system built with Node.js, focusing on authentication, session management, Redis caching, WebSockets, and core system design principles.
+A production-grade backend system built with Node.js, designed to demonstrate modern backend architecture, authentication, session management, Redis caching, WebSockets, RBAC, and a real-time collaborative coding platform.
 
 ---
 
-## 📌 Features
+# 📌 Features
 
-* 🔐 Authentication (Signup / Login)
-* 🔄 JWT (Access & Refresh Token)
-* 📊 Session Management (Multi-device support)
-* 🧠 Redis Integration (Caching / Session store)
-* ⚡ Real-time communication (WebSockets)
-* 🛡️ Security (Rate limiting, account lock, validation)
+### Authentication & Security
+
+* 🔐 User Registration & Login
+* 🔄 JWT Access & Refresh Tokens
+* 📊 Multi-Device Session Management
+* 🛡️ Account Lockout Protection
+* 🚦 Rate Limiting
+* ✅ Request Validation
+* 📧 Email Verification Support
 * 🧾 Audit Logs
 * 🧑‍💼 Role-Based Access Control (RBAC)
-*  ... other 
+
+### Real-Time Collaboration
+
+* ⚡ Socket.IO Integration
+* 👥 Collaborative Coding Rooms
+* 💬 Real-Time Chat Messaging
+* 📝 Live Code Synchronization
+* 📚 Code Version Snapshots
+* ⏱️ Collaboration Session Tracking
+* 🎯 Interview Room Management
+
+### Scalability
+
+* 🧠 Redis Caching
+* 📡 WebSocket Scaling Support
+* 🏗️ Modular Architecture
+* 📈 Production-Ready Database Design
 
 ---
 
-## 🏗️ Tech Stack
+# 🏗️ Tech Stack
+
+### Backend
 
 * Node.js
 * Express.js
-* MySQL / PostgreSQL (Sequelize ORM)
+
+### Database
+
+* MySQL / PostgreSQL
+* Sequelize ORM
+
+### Cache & Realtime
+
 * Redis
 * Socket.IO
-* JWT Authentication
+
+### Authentication
+
+* JWT (Access Token + Refresh Token)
 
 ---
 
-## 📁 Project Structure
+# 📁 Project Structure
 
-```
+```text
 src/
- ├── controllers/
- ├── services/
- ├── models/
- ├── routes/
- ├── middleware/
- ├── utils/
- ├── config/
- └── app.js
+│
+├── config/
+├── controllers/
+├── middleware/
+├── models/
+├── routes/
+├── services/
+├── sockets/
+├── utils/
+│
+├── app.js
+└── server.js
 ```
 
 ---
 
-## ⚙️ Setup Instructions
+# ⚙️ Setup Instructions
 
-### 1️⃣ Clone the Repository
+## 1. Clone Repository
 
 ```bash
-[git clone https://github.com/your-username/scalable-backend-system.git](https://github.com/karankumar12345/nextgen-backend-system
+git clone https://github.com/karankumar12345/nextgen-backend-system.git
+
 cd nextgen-backend-system
 ```
 
 ---
 
-### 2️⃣ Install Dependencies
+## 2. Install Dependencies
 
 ```bash
 npm install
@@ -65,24 +100,30 @@ npm install
 
 ---
 
-### 3️⃣ Setup Environment Variables
+## 3. Configure Environment Variables
 
-Create a `.env` file in the root:
+Create a `.env` file in the root directory.
 
 ```env
-DB_PASSWORD=""
-
-DB_USER=""
-DB_NAME="
-DB_HOST=
-DB_DIALECT=
 PORT=5000
 
+DB_HOST=
+DB_PORT=
+DB_NAME=
+DB_USER=
+DB_PASSWORD=
+DB_DIALECT=
+
+JWT_ACCESS_SECRET=
+JWT_REFRESH_SECRET=
+
+REDIS_HOST=
+REDIS_PORT=
 ```
 
 ---
 
-### 4️⃣ Run Migrations
+## 4. Run Database Migrations
 
 ```bash
 npx sequelize db:migrate
@@ -90,7 +131,7 @@ npx sequelize db:migrate
 
 ---
 
-### 5️⃣ Start the Server
+## 5. Start Development Server
 
 ```bash
 npm run dev
@@ -98,29 +139,455 @@ npm run dev
 
 ---
 
-## 🚀 API Base URL
+# 🚀 API Base URL
 
-```
-http://localhost:5000/api/v1/
+```text
+http://localhost:5000/api/v1
 ```
 
 ---
 
-## 🧪 Future Improvements
+# 🗄️ Database Architecture
+
+The system follows a normalized relational database design suitable for collaborative platforms, interview systems, and real-time coding applications.
+
+---
+
+## High-Level Relationship Diagram
+
+```text
+Role
+ │
+ ▼
+User
+ │
+ ├──────────► UserSession
+ │
+ ├──────────► Room
+ │              │
+ │              ├────────► Message
+ │              │
+ │              ├────────► CodeSnapshot
+ │              │
+ │              └────────► CollaborationSession
+ │
+ └──────────► RoomParticipants
+                   │
+                   ▼
+                 Room
+```
+
+---
+
+# Core Entities
+
+## Role
+
+Stores authorization levels.
+
+### Examples
+
+* Admin
+* Interviewer
+* Candidate
+* Moderator
+
+### Relationship
+
+```text
+Role (1)
+   │
+   ▼
+User (Many)
+```
+
+---
+
+## User
+
+Represents registered users.
+
+### Important Fields
+
+```text
+username
+email
+password
+role_id
+is_active
+is_verified
+failed_login_attempts
+locked_until
+lockout_count
+```
+
+### Security Features
+
+* Failed login tracking
+* Account lock protection
+* Email verification
+* Role-based permissions
+
+---
+
+## UserSession
+
+Tracks active user sessions.
+
+### Purpose
+
+Provides:
+
+* Multi-device login
+* Refresh token management
+* Logout from specific devices
+* Logout from all devices
+* Session monitoring
+
+### Relationship
+
+```text
+User (1)
+ │
+ ▼
+UserSession (Many)
+```
+
+---
+
+## Room
+
+Represents collaborative coding rooms.
+
+### Examples
+
+```text
+React Interview
+NodeJS Interview
+System Design Session
+```
+
+### Fields
+
+```text
+room_id
+room_name
+created_by
+room_type
+is_private
+```
+
+### Relationship
+
+```text
+User (1)
+ │
+ ▼
+Room (Many)
+```
+
+---
+
+## Message
+
+Stores real-time chat messages.
+
+### Relationship
+
+```text
+User (1)
+ │
+ ▼
+Message (Many)
+
+Room (1)
+ │
+ ▼
+Message (Many)
+```
+
+### Flow
+
+```text
+User
+ ↓
+Socket Event
+ ↓
+Database Save
+ ↓
+Broadcast
+```
+
+---
+
+## CodeSnapshot
+
+Stores code history and version tracking.
+
+### Use Cases
+
+* Undo Changes
+* Version History
+* Interview Review
+* Audit Trail
+
+### Relationship
+
+```text
+Room (1)
+ │
+ ▼
+CodeSnapshot (Many)
+```
+
+---
+
+## CollaborationSession
+
+Stores complete collaboration history.
+
+### Tracks
+
+```text
+started_at
+ended_at
+duration
+participants
+final_code
+whiteboard_data
+```
+
+### Relationship
+
+```text
+Room (1)
+ │
+ ▼
+CollaborationSession (Many)
+```
+
+---
+
+## RoomParticipants
+
+Production-grade many-to-many mapping.
+
+### Schema
+
+```text
+room_id
+user_id
+joined_at
+left_at
+role
+```
+
+### Relationship
+
+```text
+User A
+User B
+User C
+
+      ▼
+
+Room X
+```
+
+Implemented using:
+
+```javascript
+User.belongsToMany(Room, {
+  through: "room_participants",
+});
+
+Room.belongsToMany(User, {
+  through: "room_participants",
+});
+```
+
+---
+
+# 🔄 Real-Time Event Flow
+
+## Login
+
+```text
+User
+ ↓
+API
+ ↓
+JWT Generation
+ ↓
+Create Session
+ ↓
+Return Tokens
+```
+
+---
+
+## Create Room
+
+```text
+User
+ ↓
+API
+ ↓
+Create Room
+ ↓
+Database Save
+ ↓
+Socket Room Ready
+```
+
+---
+
+## Join Room
+
+```text
+User
+ ↓
+Socket Join
+ ↓
+Update Participants
+ ↓
+Broadcast Event
+```
+
+---
+
+## Send Message
+
+```text
+User
+ ↓
+Socket Event
+ ↓
+Save Message
+ ↓
+Broadcast
+ ↓
+Update UI
+```
+
+---
+
+## Code Synchronization
+
+```text
+Editor Change
+ ↓
+Socket Emit
+ ↓
+Server
+ ↓
+Broadcast
+ ↓
+All Clients Updated
+```
+
+---
+
+# 📈 Production Enhancements
+
+### Redis
+
+Used for:
+
+* Socket Scaling
+* Distributed Events
+* Presence Tracking
+* Session Caching
+
+---
+
+### Soft Deletes
+
+Instead of:
+
+```sql
+DELETE
+```
+
+Use:
+
+```sql
+deleted_at
+```
+
+for data recovery and auditing.
+
+---
+
+### Audit Logs
+
+Tracks:
+
+* Login
+* Logout
+* Room Creation
+* Room Deletion
+* Permission Changes
+* Security Events
+
+---
+
+### Query Optimization
+
+Recommended indexes:
+
+```text
+email
+username
+role_id
+user_id
+room_id
+created_at
+```
+
+---
+
+# 🧪 Future Improvements
 
 * Two-Factor Authentication (2FA)
-* OAuth (Google Login)
-* Distributed system scaling
-* Advanced monitoring & logging
+* Google OAuth Login
+* Distributed Microservices
+* Kubernetes Deployment
+* Event-Driven Architecture
+* Monitoring & Observability
+* WebRTC Video Interview Support
+* Collaborative Whiteboard
 
 ---
 
-## 🤝 Contributing
+# 🎯 Use Cases
 
-Pull requests are welcome. For major changes, please open an issue first.
+This architecture is suitable for:
+
+* Real-Time Collaborative IDEs
+* Technical Interview Platforms
+* Pair Programming Systems
+* Online Coding Assessments
+* Remote Interview Solutions
+* Enterprise Collaboration Platforms
 
 ---
 
-## 📄 License
+# 🤝 Contributing
+
+Contributions are welcome.
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit changes
+4. Open a Pull Request
+
+---
+
+# 📄 License
 
 MIT License
+
+---
+
+Built with ❤️ using Node.js, Express, Sequelize, Redis, Socket.IO, and modern backend engineering practices.

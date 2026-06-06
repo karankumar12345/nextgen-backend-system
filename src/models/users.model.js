@@ -1,8 +1,8 @@
-'use strict';
+"use strict";
 
 module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define(
-    'User',
+    "User",
     {
       id: {
         type: DataTypes.INTEGER,
@@ -39,18 +39,15 @@ module.exports = (sequelize, DataTypes) => {
       full_name: {
         type: DataTypes.STRING,
         allowNull: false,
-         
       },
 
       profile_pic: {
         type: DataTypes.STRING,
-        
       },
 
       role_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
-      
       },
       failed_login_attempts: {
         type: DataTypes.INTEGER,
@@ -75,19 +72,25 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.DATE,
         allowNull: false,
       },
-      
     },
     {
-      tableName: 'users',
+      tableName: "users",
       timestamps: true,
       underscored: true,
-    }
+      createdAt: "created_at",
+
+      updatedAt: "updated_at",
+    },
   );
 
   User.associate = (models) => {
     User.belongsTo(models.Role, {
-      foreignKey: 'role_id',
-      as: 'role',
+      foreignKey: "role_id",
+      as: "role",
+    });
+    User.hasMany(models.Room, {
+      foreignKey: "created_by",
+      as: "created_rooms",
     });
   };
 

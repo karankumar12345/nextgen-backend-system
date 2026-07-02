@@ -45,6 +45,9 @@ module.exports = (sequelize, DataTypes) => {
       tableName: "rooms",
       timestamps: true,
       underscored: true,
+      created_at: "created_at",
+
+      updated_at: "updated_at",
     },
   );
 
@@ -59,7 +62,6 @@ module.exports = (sequelize, DataTypes) => {
       sourceKey: "room_id",
       as: "messages",
     });
-
 
     Room.hasMany(models.SessionRoom, {
       foreignKey: "room_id",

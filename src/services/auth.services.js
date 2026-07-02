@@ -17,12 +17,7 @@ const sendEmail = require("../utils/SendMail");
 class AuthService {
 RegisterUser = async function ({ userData, profile_pic }) {
   try {
-    console.log("\n========== USER REGISTRATION START ==========");
-    console.log("Incoming user data:", {
-      ...userData,
-      password: "[HIDDEN]",
-    });
-    console.log("Profile pic received:", !!profile_pic);
+  
 
     const {
       username,
@@ -32,57 +27,44 @@ RegisterUser = async function ({ userData, profile_pic }) {
       role_id = 2,
     } = userData;
 
-    console.log("Checking existing email:", email);
     const existingUser = await User.findOne({ where: { email } });
 
     if (existingUser) {
-      console.log("Registration failed: Email already exists");
       throw new AppError(
         "Email already in use",
         STATUS_CODES.BAD_REQUEST
       );
     }
 
-    console.log("Checking existing username:", username);
     const existingUsername = await User.findOne({
       where: { username },
     });
 
     if (existingUsername) {
-      console.log("Registration failed: Username already exists");
+  
       throw new AppError(
         "Username already in use",
         STATUS_CODES.BAD_REQUEST
       );
     }
 
-    console.log("Hashing password...");
-    userData.password = await hash(password);
-    console.log("Password hashed successfully");
 
+    userData.password = await hash(password);
+  
     if (profile_pic) {
-      console.log("Uploading profile image...");
+
       const uploadedFile = await uploadImage(
         profile_pic.buffer,
         `profile_${Date.now()}`
       );
       userData.profile_pic = uploadedFile.url;
-      console.log(
-        "Profile image uploaded:",
-        uploadedFile.url
-      );
+   
     }
 
-    console.log("Creating activation token...");
+
     const { activationCode, token } =
       CreateActivationToken(userData);
 
-    console.log("Activation token created");
-    console.log("Activation code:", activationCode);
-    console.log(
-      "JWT token preview:",
-      token.substring(0, 30) + "..."
-    );
 
     const data = {
       user: userData,
@@ -91,7 +73,6 @@ RegisterUser = async function ({ userData, profile_pic }) {
       year: new Date().getFullYear(),
     };
 
-    console.log("Sending activation email to:", userData.email);
 
     await sendEmail({
       email: userData.email,
@@ -100,8 +81,6 @@ RegisterUser = async function ({ userData, profile_pic }) {
       data,
     });
 
-    console.log("Activation email sent successfully");
-    console.log("========== USER REGISTRATION SUCCESS ==========\n");
 
     return {
       email: userData.email,
@@ -121,14 +100,8 @@ RegisterUser = async function ({ userData, profile_pic }) {
 };
 
 ActivateUser = async function ({ activation_token, activation_code }) {
-  console.log("\n========== ACCOUNT ACTIVATION START ==========");
 
   try {
-    console.log(
-      "Received activation token:",
-      activation_token?.substring(0, 30) + "..."
-    );
-    console.log("Received activation code:", activation_code);
 
     // Validate input
     if (!activation_token || !activation_code) {
@@ -142,16 +115,12 @@ ActivateUser = async function ({ activation_token, activation_code }) {
 
     // Verify JWT token
     try {
-      console.log("Verifying JWT token...");
+     
       decoded = jwt.verify(
         activation_token,
         process.env.ACTIVATION_TOKEN_SECRET
       );
-      console.log("JWT verified successfully");
-      console.log(
-        "Decoded token payload:",
-        JSON.stringify(decoded, null, 2)
-      );
+  
     } catch (error) {
       console.error("JWT verification failed:", error.message);
       throw new AppError(
@@ -163,21 +132,6 @@ ActivateUser = async function ({ activation_token, activation_code }) {
     // Extract payload
     const { user, activationCode } = decoded;
 
-    console.log("Decoded user object:", user);
-    console.log(
-      "Decoded user email:",
-      user?.email
-    );
-    console.log(
-      "Stored activation code:",
-      activationCode,
-      `(${typeof activationCode})`
-    );
-    console.log(
-      "Received activation code:",
-      activation_code,
-      `(${typeof activation_code})`
-    );
 
     // Validate decoded payload
     if (!user) {
@@ -203,8 +157,7 @@ ActivateUser = async function ({ activation_token, activation_code }) {
       );
     }
 
-    console.log("Activation code verified successfully");
-
+  
     // Check if user already exists
     const existingUser = await User.findOne({
       where: { email: user.email },
@@ -224,8 +177,6 @@ ActivateUser = async function ({ activation_token, activation_code }) {
         is_verified: true,
       });
 
-      console.log("Existing inactive user activated successfully");
-      console.log("========== ACCOUNT ACTIVATION SUCCESS ==========\n");
 
       return existingUser;
     }
@@ -242,15 +193,9 @@ ActivateUser = async function ({ activation_token, activation_code }) {
       is_verified: true,
     };
 
-    console.log("Creating user with payload:", {
-      ...userPayload,
-      password: "[HASHED]",
-    });
+
 
     const newUser = await User.create(userPayload);
-
-    console.log("User created successfully:", newUser.email);
-    console.log("========== ACCOUNT ACTIVATION SUCCESS ==========\n");
 
     return { user: newUser };
   } catch (error) {

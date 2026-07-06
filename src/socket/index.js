@@ -3,6 +3,85 @@ const { User, Room, Message } = require("../models");
 
 const roomParticipants = new Map();
 const roomWhiteboards = new Map();
+const pendingJoinRequests = new Map();
+const approvedUsers = new Map();
+
+function getApprovedSet(roomId) {
+  if (!approvedUsers.has(roomId)) {
+    approvedUsers.set(roomId, new Set());
+  }
+  return approvedUsers.get(roomId);
+}
+
+function getPendingMap(roomId) {
+  if (!pendingJoinRequests.has(roomId)) {
+    pendingJoinRequests.set(roomId, new Map());
+  }
+  return pendingJoinRequests.get(roomId);
+}
+
+function notifyHostOfJoinRequest(io, roomId, requester) {
+  const participants = roomParticipants.get(roomId);
+  if (!participants) return;
+
+  participants.forEach((participant) => {
+    if (participant.isHost) {
+      io.to(participant.socketId).emit("join_request", {
+        roomId,
+        user: {
+          id: requester.id,
+          name: requester.name,
+          username: requester.username,
+          profile_pic: requester.profile_pic,
+        },
+      });
+    }
+  });
+}
+
+async function completeRoomJoin(socket, io, roomId, room, user) {
+  socket.join(roomId);
+  socket.currentRoomId = roomId;
+
+  if (!roomParticipants.has(roomId)) {
+    roomParticipants.set(roomId, new Map());
+  }
+  if (!roomWhiteboards.has(roomId)) {
+    roomWhiteboards.set(roomId, []);
+  }
+
+  const isHost = room.created_by === user.id;
+  const participant = {
+    ...socket.userData,
+    socketId: socket.id,
+    isHost,
+  };
+
+  roomParticipants.get(roomId).set(socket.id, participant);
+
+  socket.to(roomId).emit("user_joined", { user: participant });
+  broadcastParticipants(io, roomId);
+
+  socket.emit("join_approved", { roomId });
+  socket.emit("whiteboard_state", {
+    actions: roomWhiteboards.get(roomId) || [],
+  });
+
+  if (isHost) {
+    const pending = getPendingMap(roomId);
+    pending.forEach((requester) => {
+      socket.emit("join_request", {
+        roomId,
+        user: {
+          id: requester.user.id,
+          name: requester.user.name,
+          username: requester.user.username,
+          profile_pic: requester.user.profile_pic,
+        },
+      });
+    });
+  }
+}
 
 function getParticipantsList(roomId) {
   const participants = roomParticipants.get(roomId);
@@ -97,31 +176,68 @@ const registerSocket = (io) => {
           return;
         }
 
-        socket.join(roomId);
-        socket.currentRoomId = roomId;
-
-        if (!roomParticipants.has(roomId)) {
-          roomParticipants.set(roomId, new Map());
-        }
-        if (!roomWhiteboards.has(roomId)) {
-          roomWhiteboards.set(roomId, []);
-        }
-
         const isHost = room.created_by === user.id;
-        const participant = {
-          ...socket.userData,
-          socketId: socket.id,
-          isHost,
-        };
+        const isApproved = getApprovedSet(roomId).has(user.id);
 
-        roomParticipants.get(roomId).set(socket.id, participant);
+        if (room.is_private && !isHost && !isApproved) {
+          const pending = getPendingMap(roomId);
+          pending.set(user.id, {
+            socketId: socket.id,
+            user: socket.userData,
+          });
 
-        socket.to(roomId).emit("user_joined", { user: participant });
-        broadcastParticipants(io, roomId);
+          socket.emit("join_pending", {
+            roomId,
+            message: "Waiting for host approval to enter this private room",
+          });
 
-        socket.emit("whiteboard_state", {
-          actions: roomWhiteboards.get(roomId) || [],
-        });
+          notifyHostOfJoinRequest(io, roomId, socket.userData);
+          return;
+        }
+
+        await completeRoomJoin(socket, io, roomId, room, user);
+      });
+
+      socket.on("approve_join", async ({ roomId, userId }) => {
+        if (!roomId || !userId) return;
+
+        const room = await Room.findOne({ where: { room_id: roomId } });
+        if (!room || room.created_by !== user.id) {
+          socket.emit("error", { message: "Only the host can approve join requests" });
+          return;
+        }
+
+        getApprovedSet(roomId).add(userId);
+
+        const pending = getPendingMap(roomId).get(userId);
+        if (pending) {
+          const guestSocket = io.sockets.sockets.get(pending.socketId);
+          if (guestSocket) {
+            await completeRoomJoin(guestSocket, io, roomId, room, { id: userId });
+          } else {
+            io.to(pending.socketId).emit("join_approved", { roomId });
+          }
+          getPendingMap(roomId).delete(userId);
+        }
+      });
+
+      socket.on("deny_join", async ({ roomId, userId }) => {
+        if (!roomId || !userId) return;
+
+        const room = await Room.findOne({ where: { room_id: roomId } });
+        if (!room || room.created_by !== user.id) {
+          socket.emit("error", { message: "Only the host can deny join requests" });
+          return;
+        }
+
+        const pending = getPendingMap(roomId).get(userId);
+        if (pending) {
+          io.to(pending.socketId).emit("join_denied", {
+            roomId,
+            message: "The host denied your request to join this private room",
+          });
+          getPendingMap(roomId).delete(userId);
+        }
       });
 
       socket.on("leave_room", ({ roomId }) => {
@@ -146,6 +262,17 @@ const registerSocket = (io) => {
 
       socket.on("send_message", async ({ roomId, message }) => {
         if (!roomId || !message?.trim()) return;
+
+        const room = await Room.findOne({ where: { room_id: roomId } });
+        if (!room) return;
+
+        if (room.is_private && room.created_by !== user.id) {
+          const approved = getApprovedSet(roomId).has(user.id);
+          if (!approved) {
+            socket.emit("error", { message: "You do not have access to this private room" });
+            return;
+          }
+        }
 
         try {
           const savedMessage = await Message.create({

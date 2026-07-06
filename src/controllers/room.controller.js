@@ -12,7 +12,7 @@ class RoomController {
   });
 
   GetAllRooms = asyncHandler(async (req, res) => {
-    const result = await RoomService.GetAllRooms();
+    const result = await RoomService.GetAllRooms(req.user.id);
     res.status(STATUS_CODES.OK).json({
       success: true,
       message: "Rooms retrieved successfully",
@@ -21,10 +21,19 @@ class RoomController {
   });
 
   GetRoomById = asyncHandler(async (req, res) => {
-    const result = await RoomService.GetRoomById(req.params.id);
+    const result = await RoomService.GetRoomById(req.params.id, req.user.id);
     res.status(STATUS_CODES.OK).json({
       success: true,
       message: "Room retrieved successfully",
+      data: result,
+    });
+  });
+
+  GetDashboard = asyncHandler(async (req, res) => {
+    const result = await RoomService.GetDashboard(req.user.id);
+    res.status(STATUS_CODES.OK).json({
+      success: true,
+      message: "Dashboard data retrieved successfully",
       data: result,
     });
   });

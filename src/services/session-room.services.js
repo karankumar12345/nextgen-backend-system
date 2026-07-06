@@ -9,6 +9,13 @@ class SessionRoomService {
       throw new AppError("Room not found", STATUS_CODES.NOT_FOUND);
     }
 
+    if (room.is_private && room.created_by !== userId) {
+      throw new AppError(
+        "This is a private room. Host approval is required to join.",
+        STATUS_CODES.FORBIDDEN
+      );
+    }
+
     const activeSession = await SessionRoom.findOne({
       where: { room_id: roomId, end_at: null },
       order: [["started_at", "DESC"]],

@@ -9,6 +9,8 @@ const router=  express.Router();
 
 
 
+router.get('/dashboard',authMiddleware,RoomController.GetDashboard);
+
 router.get('/get-all-rooms',authMiddleware,RoomController.GetAllRooms);
 
 router.post('/create-room',authMiddleware,RoomController.CreateRoom);

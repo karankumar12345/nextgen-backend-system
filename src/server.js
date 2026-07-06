@@ -9,11 +9,8 @@ const startServer = async () => {
   try {
     await sequelize.authenticate();
     console.log("Database connection has been established successfully.");
-
     const PORT = process.env.PORT || 3000;
-
     const server = http.createServer(app);
-
     const io = new Server(server, {
       cors: {
         origin: "*",
@@ -21,9 +18,7 @@ const startServer = async () => {
         allowedHeaders: ["Content-Type", "Authorization"],
       },
     });
-
   registerSocket(io);
-
     server.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });
